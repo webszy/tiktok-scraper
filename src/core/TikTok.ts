@@ -484,15 +484,18 @@ export class TikTokScraper extends EventEmitter {
      */
     // eslint-disable-next-line class-methods-use-this
     private async extractVideoId(item: PostCollector): Promise<string> {
-        if (item.createTime > 1595808000) {
-            return '';
+//         if (item.createTime > 1595808000) {
+//             return '';
+//         }
+         const options:any = {
+            uri: item.videoUrl,
+            headers: this.headers
         }
-
+        if(this.proxy){
+            options.proxy = `http://${this.proxy}`
+        }
         try {
-            const result = await rp({
-                uri: item.videoUrl,
-                headers: this.headers,
-            });
+            const result = await rp(options);
             const position = Buffer.from(result).indexOf('vid:');
             if (position !== -1) {
                 const id = Buffer.from(result)
@@ -503,8 +506,9 @@ export class TikTokScraper extends EventEmitter {
                     this.hdVideo ? `&ratio=default&improve_bitrate=1` : ''
                 }`;
             }
-        } catch {
+        } catch(e) {
             // continue regardless of error
+            console.log('extractVideoId failed',e.message)
         }
         return '';
     }
